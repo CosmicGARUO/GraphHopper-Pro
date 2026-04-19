@@ -47,6 +47,12 @@ route_url = "https://graphhopper.com/api/1/route?"
 key = "00c741bf-f30c-48ba-aecb-6c31877b5d39"
 
 while True:
+    # --- ADDED UNIT CHOICE AT START OF LOOP ---
+    print("\n+++++++++++++++++++++++++++++++++++++++++++++")
+    unit_choice = input("Select preferred units: (1) Metric/KM or (2) Imperial/Miles: ")
+    use_miles = True if unit_choice == "2" else False
+    # ------------------------------------------
+
     print("\n+++++++++++++++++++++++++++++++++++++++++++++")
     print("Vehicle profiles available on Graphhopper:")
     print("+++++++++++++++++++++++++++++++++++++++++++++")
@@ -76,32 +82,47 @@ while True:
         op="&point="+str(orig[1])+"%2C"+str(orig[2])
         dp="&point="+str(dest[1])+"%2C"+str(dest[2])
         paths_url = route_url + urllib.parse.urlencode({"key":key, "vehicle":vehicle}) + op + dp 
-        paths_status = requests.get(paths_url).status_code
-        paths_data = requests.get(paths_url).json()
+        
+        # Optimized to call requests only once
+        response = requests.get(paths_url)
+        paths_status = response.status_code
+        paths_data = response.json()
+        
         print("Routing API Status: " + str(paths_status) + "\nRouting API URL:\n" + paths_url)
         print("=================================================")
         print("Directions from " + orig[3] + " to " + dest[3] + " by " + vehicle)
         print("=================================================")
+        
         if paths_status == 200:
-            miles = (paths_data["paths"][0]["distance"])/1000/1.61 
-            km = (paths_data["paths"][0]["distance"])/1000
+            # --- REPLACE DISTANCE CALCULATION SECTION ---
+            distance_km = paths_data["paths"][0]["distance"] / 1000
+            distance_mi = distance_km / 1.61
+            
+            # Duration calculations
             sec = int(paths_data["paths"][0]["time"]/1000%60)
             min = int(paths_data["paths"][0]["time"]/1000/60%60)
             hr = int(paths_data["paths"][0]["time"]/1000/60/60) 
 
-            print("Distance Traveled: {0:.1f} miles / {1:.1f} km".format(miles, km))
+            if use_miles:
+                print(f"Total Distance: {distance_mi:.1f} miles")
+            else:
+                print(f"Total Distance: {distance_km:.1f} km")
+                
             print("Trip Duration: {0:02d}:{1:02d}:{2:02d}".format(hr, min, sec))
             print("=================================================") 
-            for each in range(len(paths_data["paths"][0]["instructions"])):
-                path = paths_data["paths"][0]["instructions"][each]["text"]
-                distance = paths_data["paths"][0]["instructions"][each]["distance"]
-                print("{0} ( {1:.1f} km / {2:.1f} miles )".format(path, distance/1000, distance/1000/1.61))
+
+            # --- UPDATE THE INSTRUCTION LOOP ---
+            for instr in paths_data["paths"][0]["instructions"]:
+                dist_km = instr["distance"] / 1000
+                if use_miles:
+                    dist_display = f"{dist_km / 1.61:.2f} miles"
+                else:
+                    dist_display = f"{dist_km:.2f} km"
+                print(f"{instr['text']} ({dist_display})")
+            # -----------------------------------
+            
             print("=============================================")
 
         else:
             print("Error message: " + paths_data["message"])
-            print("*************************************************") 
-
-           
-
-
+            print("*************************************************")
