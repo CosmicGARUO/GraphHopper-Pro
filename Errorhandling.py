@@ -1,16 +1,6 @@
 import requests
 import urllib.parse
 
-# ─────────────────────────────────────────────────────────────────────────────
-#  GraphHopper Pro  |  Lead Developer 2 Branch  —  feature-error-handling
-#  Enhancements:
-#    1. Detailed HTTP status code error messages (400, 401, 403, 404, 429...)
-#    2. Extended vehicle profile list (scooter, hike, mtb, racingbike, truck)
-#    3. IndexError fix — handles fake/invalid locations gracefully
-#    4. Raw API URLs hidden from the user
-# ─────────────────────────────────────────────────────────────────────────────
-
-# ── Extended Vehicle Profiles ─────────────────────────────────────────────────
 VEHICLE_PROFILES = {
     "1":  {"name": "car",         "label": "Car"},
     "2":  {"name": "bike",        "label": "Bike"},
@@ -23,8 +13,6 @@ VEHICLE_PROFILES = {
     "9":  {"name": "small_truck", "label": "Small Truck"},
 }
 
-
-# ── Detailed Error Handler ────────────────────────────────────────────────────
 def handle_status_error(status_code, response_json=None):
     error_map = {
         400: "Error 400 - Invalid Route. Please check your locations or vehicle profile.",
@@ -48,8 +36,6 @@ def handle_status_error(status_code, response_json=None):
         if api_msg:
             print(f"   API says: {api_msg}")
 
-
-# ── Geocoding Function ────────────────────────────────────────────────────────
 def geocoding(location, key):
     while location == "":
         location = input("Enter the location again: ")
@@ -63,7 +49,6 @@ def geocoding(location, key):
 
     if json_status == 200:
 
-        # ── Fix: IndexError guard for fake/invalid locations ──────────────
         if len(json_data["hits"]) > 0:
             lat   = json_data["hits"][0]["point"]["lat"]
             lng   = json_data["hits"][0]["point"]["lng"]
@@ -80,11 +65,9 @@ def geocoding(location, key):
             else:
                 new_loc = name
 
-            # Raw API URL hidden — show only the resolved name
             print("Location found: " + new_loc + " (Type: " + value + ")")
 
         else:
-            # Location returned 200 but no hits — place doesn't exist
             lat     = "null"
             lng     = "null"
             new_loc = location
@@ -99,8 +82,6 @@ def geocoding(location, key):
 
     return json_status, lat, lng, new_loc
 
-
-# ── Vehicle Profile Selector ──────────────────────────────────────────────────
 def select_vehicle():
     print("\n+++++++++++++++++++++++++++++++++++++++++++++")
     print(" Vehicle Profiles Available on GraphHopper: ")
@@ -122,25 +103,20 @@ def select_vehicle():
         else:
             print("Invalid choice. Please enter a number between 1 and 9 (or 'q' to quit).")
 
-
-# ── Main Program ──────────────────────────────────────────────────────────────
 route_url = "https://graphhopper.com/api/1/route?"
 key       = "00c741bf-f30c-48ba-aecb-6c31877b5d39"
 
 while True:
 
-    # Step 1: Extended Vehicle Profile Selection
     vehicle = select_vehicle()
     if vehicle == "quit":
         break
 
-    # Step 2: Get Start Location
     loc1 = input("Starting Location: ")
     if loc1.lower() in ("quit", "q"):
         break
     orig = geocoding(loc1, key)
 
-    # Step 3: Get Destination
     loc2 = input("Destination: ")
     if loc2.lower() in ("quit", "q"):
         break
@@ -148,12 +124,10 @@ while True:
 
     print("=================================================")
 
-    # Step 4: Request Route only if both geocodes succeeded
     if orig[0] == 200 and dest[0] == 200:
         op = "&point=" + str(orig[1]) + "%2C" + str(orig[2])
         dp = "&point=" + str(dest[1]) + "%2C" + str(dest[2])
 
-        # Raw routing URL hidden from user
         paths_url    = route_url + urllib.parse.urlencode({"key": key, "vehicle": vehicle}) + op + dp
         response     = requests.get(paths_url)
         paths_status = response.status_code
