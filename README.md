@@ -4,13 +4,13 @@
 This application is an enhanced version of the GraphHopper Directions tool. It allows users to calculate routes between locations using various vehicle profiles (car, bike, foot) and provides detailed turn-by-turn directions.
 
 ## The Team
-| Role | Member Name |
+| Role | Member Name | 
 | :--- | :--- |
 | **Scrum Leader** | Ogdol, Kim Andrie |
 | **Lead Developer 1** | Tiu, Erickson |
 | **Lead Developer 2** | Estrada, Clark Sebastian |
-| **UI Designer** | Mayor, Arlindo |
-| **QA Tester** | Oñada, Rozencrantz |
+| **UI Designer** | Oñada, Rozencrantz | 
+| **QA Tester** | Mayor, Arlindo |
 
 ## Features & Enhancements
 - **Dynamic Geocoding:** Converts city names into GPS coordinates.
